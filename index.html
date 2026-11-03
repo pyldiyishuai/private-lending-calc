@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#831843" />
+
+<title>民间借贷利息计算器｜四倍 LPR 上限、砍头息、超额利息一键算</title>
+<meta name="description" content="按合同成立时的一年期 LPR 四倍判断利率是否超标，自动扣除砍头息、拆分受保护与不受保护利息，并算出多付部分能要回多少。" />
+<meta name="keywords" content="民间借贷利息计算器,四倍LPR,砍头息,民间借贷利率上限,LPR四倍是多少,超额利息返还,借条利息怎么算,民间借贷司法解释" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<link rel="canonical" href="https://pyldiyishuai.github.io/private-lending-calc/" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="借 10 万到手 9 万？砍头息不该算本金" />
+<meta property="og:description" content="按合同成立时的 LPR 四倍判断利率上限，砍头息从本金里扣掉，多付的利息还能要回来。" />
+<meta property="og:url" content="https://pyldiyishuai.github.io/private-lending-calc/" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23831843'/%3E%3Ctext x='50' y='70' font-size='54' font-family='serif' fill='%23fff' text-anchor='middle'%3E%C2%A5%3C/text%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="assets/css/base.css" />
+<link rel="stylesheet" href="assets/css/layout.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+<link rel="stylesheet" href="assets/css/components-calc.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "民间借贷利息计算器",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "All",
+  "description": "按合同成立时的一年期 LPR 四倍判断民间借贷利率是否超标，自动处理砍头息、拆分受保护与不受保护利息。",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" }
+}
+</script>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="./" aria-label="民间借贷利息计算器">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="22" height="22"><text x="50" y="72" font-size="62" font-family="serif" fill="#fff" text-anchor="middle">¥</text></svg>
+      </span>
+      <span class="brand__text">民间借贷利息计算器</span>
+    </a>
+    <nav class="topnav" aria-label="主导航">
+      <a href="#calculator">开始计算</a>
+      <a href="#result">利息明细</a>
+      <a href="#lpr">LPR 表</a>
+      <a href="#faq">常见问题</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <div class="hero__inner">
+      <div class="hero__copy">
+        <p class="hero__badge">按《民间借贷司法解释》· 四倍 LPR 上限</p>
+        <h1 class="hero__title">借 10 万<br /><em>到手只有 9 万？</em></h1>
+        <p class="hero__sub">
+          砍头息不该算本金。《民法典》第 670 条：<br class="only-pc" />
+          利息不得预先在本金中扣除——本金按 <b>9 万</b> 算，利息也跟着降。
+        </p>
+        <div class="hero__stats">
+          <div class="stat"><b>4 倍 LPR</b><span>2020-08-20 后</span></div>
+          <div class="stat"><b>24/36%</b><span>此前旧规</span></div>
+          <div class="stat"><b>不上传</b><span>数据只在本地</span></div>
+        </div>
+      </div>
+
+      <aside class="demo-card" aria-label="示例">
+        <span class="demo-card__tag">借 10 万 · 扣 5 千 · 约定 24% · 一年</span>
+        <div class="demo-card__split">
+          <div class="demo-card__item demo-card__item--bad">
+            <span>账面本金 + 约定 24%</span>
+            <b>12.4 万</b>
+          </div>
+          <div class="demo-card__arrow" aria-hidden="true">→</div>
+          <div class="demo-card__item">
+            <span>扣砍头息 + 四倍 LPR</span>
+            <b>10.89 万</b>
+          </div>
+        </div>
+        <p class="demo-card__foot">差 <b>1.51 万</b>，这部分利息不受保护</p>
+      </aside>
+    </div>
+    <div class="hero__glow" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ 计算器 ============ -->
+  <section class="calc" id="calculator">
+    <div class="calc__grid">
+
+      <!-- ---------- 输入 ---------- -->
+      <form class="card card--input" id="form" autocomplete="off" novalidate>
+        <h2 class="card__title">填借款信息</h2>
+
+        <div class="group">
+          <div class="group__head">
+            <span class="group__title">① 本金与砍头息</span>
+            <span class="group__hint">实际到手才是本金</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="principal">借条上的本金</label>
+            <div class="input-money">
+              <input id="principal" name="principal" type="text" inputmode="decimal" value="100,000" />
+              <span class="input-money__unit">元</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="headFee">砍头息 / 前置费用</label>
+            <div class="input-money">
+              <input id="headFee" name="headFee" type="text" inputmode="decimal" value="5,000" />
+              <span class="input-money__unit">元</span>
+            </div>
+            <p class="field__tip" id="headTip"></p>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group__head">
+            <span class="group__title">② 期间</span>
+            <span class="group__hint" id="periodTip">—</span>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label class="field__label" for="startDate">借款日（合同成立时）</label>
+              <input class="input-date" id="startDate" name="startDate" type="date" value="2023-01-01" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="endDate">结算日</label>
+              <input class="input-date" id="endDate" name="endDate" type="date" value="2024-01-01" />
+            </div>
+          </div>
+          <div class="quickpicks">
+            <button type="button" class="quickpick" data-quick-months="6">半年</button>
+            <button type="button" class="quickpick is-on" data-quick-months="12">一年</button>
+            <button type="button" class="quickpick" data-quick-months="24">两年</button>
+            <button type="button" class="quickpick" data-quick-months="36">三年</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group__head">
+            <span class="group__title">③ 利率</span>
+            <span class="group__hint">年化，含所有费用</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="rate">约定年利率</label>
+            <div class="input-money">
+              <input id="rate" name="rate" type="number" inputmode="decimal" step="0.01" min="0" max="200" value="24" />
+              <span class="input-money__unit">%</span>
+            </div>
+            <p class="field__tip" id="rateTip"></p>
+          </div>
+          <div class="quickpicks">
+            <button type="button" class="quickpick" data-quick-rate="6">6%</button>
+            <button type="button" class="quickpick" data-quick-rate="12">12%</button>
+            <button type="button" class="quickpick" data-quick-rate="15.4">15.4%</button>
+            <button type="button" class="quickpick is-on" data-quick-rate="24">24%</button>
+            <button type="button" class="quickpick" data-quick-rate="36">36%</button>
+          </div>
+          <div class="field">
+            <label class="field__label" for="method">计息方式</label>
+            <select class="select select--sm" id="method">
+              <option value="simple">单利（常见）</option>
+              <option value="compound">复利（利滚利）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group__head">
+            <span class="group__title">④ 已还金额</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="paid">已支付总额</label>
+            <div class="input-money">
+              <input id="paid" name="paid" type="text" inputmode="decimal" value="30,000" />
+              <span class="input-money__unit">元</span>
+            </div>
+            <p class="field__tip">含利息、服务费、保证金等全部已转账款项</p>
+          </div>
+        </div>
+
+        <div class="calc__actions">
+          <button class="btn btn--primary btn--block" type="submit" id="btnCalc">算算该还多少</button>
+          <button class="btn btn--ghost btn--block btn--sm" type="button" id="btnReset">恢复默认</button>
+        </div>
+        <p class="calc__disclaimer">
+          四倍上限 = 合同成立时一年期 LPR × 4。2020-08-20 之前的合同适用 24%/36% 旧规。
+          本工具按单利计算，结果仅供参考，不构成法律意见。
+        </p>
+      </form>
+
+      <!-- ---------- 结果 ---------- -->
+      <div class="card card--result" id="result" aria-live="polite">
+        <div class="result__head">
+          <h2 class="card__title">按法定上限该还</h2>
+          <span class="result__stamp" id="resultStamp">实时更新</span>
+        </div>
+
+        <div class="result__hero">
+          <div class="result__hero-top">
+            <p class="result__hero-label">扣除已付后剩余</p>
+            <span class="result__level" id="capBadge">利率超标</span>
+          </div>
+          <p class="result__hero-value" id="heroValue">—</p>
+          <p class="result__hero-unit">万元</p>
+          <p class="result__hero-sub" id="heroSub">填写左侧信息后自动计算</p>
+        </div>
+
+        <!-- 利率区间 -->
+        <div class="zones">
+          <div class="zones__head">
+            <h3>利率区间拆分</h3>
+            <span class="zones__note">超出部分不受保护</span>
+          </div>
+          <div class="zone__list" id="zoneBox"></div>
+        </div>
+
+        <!-- 明细 -->
+        <div class="detail">
+          <div class="detail__head">
+            <h3>计算明细</h3>
+            <span class="detail__note">逐项可复核</span>
+          </div>
+          <div class="table-wrap table-wrap--flush">
+            <table class="table table--list">
+              <tbody id="detailBody"></tbody>
+            </table>
+          </div>
+          <p class="detail__alt" id="agreedTotal"></p>
+        </div>
+
+        <!-- 砍头息 -->
+        <div class="head">
+          <div class="head__head">
+            <h3>砍头息的影响</h3>
+            <span class="head__note">《民法典》第 670 条</span>
+          </div>
+          <div class="head__box" id="headBox"></div>
+        </div>
+
+        <!-- 提示 -->
+        <div class="advice" id="advice">
+          <div class="advice__icon" aria-hidden="true">⚖️</div>
+          <div class="advice__body">
+            <h3 class="advice__title">这些点要注意</h3>
+            <div class="advice__text" id="adviceText">填写信息后，这里会给出提示。</div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot--inline" data-ad-slot="result-inline" aria-hidden="true">
+          <span>广告位 · 结果区</span>
+        </div>
+
+        <div class="leadbox" id="leadBox" hidden>
+          <h3 class="leadbox__title">金额不小，要不要找律师看看？</h3>
+          <p class="leadbox__text">借贷纠纷的胜负往往在证据和时效上，早介入更有利。</p>
+          <button class="btn btn--primary btn--block" type="button" id="leadBtn">免费评估</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ad-slot ad-slot--banner" data-ad-slot="content-banner" aria-hidden="true">
+    <span>广告位 · 内容横幅</span>
+  </div>
+
+  <!-- ============ LPR 表 ============ -->
+  <section class="traps-section" id="lpr">
+    <h2 class="section__title">一年期 LPR 与四倍上限对照</h2>
+    <p class="section__desc">
+      四倍上限 = 借款日当天的 LPR × 4。<b>看你签合同那天的，不是今天的。</b>
+    </p>
+    <div class="table-wrap">
+      <table class="table table--traps">
+        <thead>
+          <tr><th>生效日期</th><th>一年期 LPR</th><th>四倍上限</th></tr>
+        </thead>
+        <tbody id="lprBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 陷阱 ============ -->
+  <section class="traps-section" id="traps">
+    <h2 class="section__title">借贷里最容易被坑的 6 件事</h2>
+    <p class="section__desc">
+      这些做法在合同里看起来都「很正常」，法律上却各有限制。
+    </p>
+    <div class="trap" id="trapList"></div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2 class="section__title">民间借贷常见问题</h2>
+    <div class="faq__list" id="faqList"></div>
+  </section>
+
+  <section class="related" id="related">
+    <h2 class="section__title">更多实用计算工具</h2>
+    <div class="related__grid">
+      <a class="related__item" href="#" data-related="irr">
+        <b>分期真实利率计算器</b><span>0.75% 月费率实际是 17.5%</span>
+      </a>
+      <a class="related__item" href="#" data-related="traffic">
+        <b>交通事故赔偿计算器</b><span>11 项赔偿逐条算</span>
+      </a>
+      <a class="related__item" href="#" data-related="injury">
+        <b>工伤赔偿计算器</b><span>1–10 级一次性补助金</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <p class="footer__brand">民间借贷利息计算器</p>
+    <p class="footer__desc">
+      本工具依据《民法典》与最高人民法院《关于审理民间借贷案件适用法律若干问题的规定》
+      （2020 年修正）计算。四倍上限取合同成立时的一年期 LPR；
+      2020 年 8 月 20 日之前的合同适用 24%/36% 旧规。
+      结果仅供参考，不构成法律意见。
+    </p>
+    <p class="footer__links">
+      <a href="#">关于我们</a><a href="#">隐私政策</a><a href="#">免责声明</a>
+      <a href="#" data-action="feedback">意见反馈</a>
+    </p>
+    <p class="footer__copy">© <span id="year">2025</span> 民间借贷利息计算器 · 保留所有权利</p>
+  </div>
+</footer>
+
+<div class="dockbar" id="dockbar" hidden>
+  <div class="dockbar__main">
+    <span class="dockbar__label">应还（法定）</span>
+    <b class="dockbar__value" id="dockSave">—</b>
+    <span class="dockbar__unit">万</span>
+  </div>
+  <button class="dockbar__btn" type="button" id="dockJump">看明细</button>
+</div>
+
+<button class="backtop" id="backtop" aria-label="返回顶部" hidden>
+  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/data/lpr.js"></script>
+<script src="assets/js/data/faq.js"></script>
+<script src="assets/js/core/lending.js"></script>
+<script src="assets/js/integrations/ads.js"></script>
+<script src="assets/js/integrations/analytics.js"></script>
+<script src="assets/js/integrations/api.js"></script>
+<script src="assets/js/integrations/auth.js"></script>
+<script src="assets/js/ui/format.js"></script>
+<script src="assets/js/ui/form.js"></script>
+<script src="assets/js/ui/result.js"></script>
+<script src="assets/js/ui/chart.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
